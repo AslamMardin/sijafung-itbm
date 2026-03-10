@@ -1,6 +1,46 @@
+<style>
+
+.hero-bg {
+    position: absolute;
+    inset: 0;
+    background:
+        linear-gradient(
+            to bottom,
+            rgba(0,0,0,0) 0%,
+            rgba(58,12,24,0.4) 50%,
+            rgba(58,12,24,0.95) 100%
+        ),
+        url('/assets/img/hero.png');
+
+    background-size: cover;
+    background-position: center;
+}
+
+.hero-blur {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+
+    backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: blur(5px);
+
+    mask-image: linear-gradient(
+        to bottom,
+        transparent 0%,
+        rgba(0,0,0,0.6) 50%,
+        black 100%
+    );
+}
+
+</style>
+
 <!-- ── HERO ── -->
+
+
 <section class="hero">
+     <div class="hero-bg"></div>
     <div class="hero-grid"></div>
+    <div class="hero-blur"></div>
 
     <div class="hero-content">
         <div class="hero-badge">Platform Jabatan Fungsional Terpadu</div>
