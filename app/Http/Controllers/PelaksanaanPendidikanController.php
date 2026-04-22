@@ -59,7 +59,7 @@ class PelaksanaanPendidikanController extends Controller
 
         // Calculate AK
         $record = new PelaksanaanPendidikan($data);
-        $data['angka_kredit'] = $record->calculateAngkaKredit();
+        $data['angka_kredit'] = $record->calculateAngkaKredit($this->user());
 
         PelaksanaanPendidikan::create($data);
         
@@ -93,7 +93,7 @@ class PelaksanaanPendidikanController extends Controller
 
         // Update and recalculate AK
         $pendidikan->update($data);
-        $pendidikan->angka_kredit = $pendidikan->calculateAngkaKredit();
+        $pendidikan->angka_kredit = $pendidikan->calculateAngkaKredit($this->user());
         $pendidikan->save();
         
         $jenisLabel = PelaksanaanPendidikan::jenisKegiatanOptions()[$jenisKegiatan];
@@ -163,6 +163,7 @@ class PelaksanaanPendidikanController extends Controller
                 'jumlah_mahasiswa' => 'nullable|integer|min:0',
                 'sks' => 'required|integer|min:1|max:10',
                 'semester' => 'required|string|max:255',
+                'link_dokumen' => 'nullable|url|max:255',
             ]),
             
             'bimbingan' => array_merge($baseRules, [
@@ -181,6 +182,7 @@ class PelaksanaanPendidikanController extends Controller
                 'jenis_pengujian' => 'nullable|string|max:255',
                 'program_studi' => 'nullable|string|max:255',
                 'semester' => 'required|string|max:255',
+                'link_dokumen' => 'nullable|url|max:255',
             ]),
             
             'bahan_ajar' => array_merge($baseRules, [

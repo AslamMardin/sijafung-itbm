@@ -47,6 +47,11 @@
                         <td>
                             <div style="font-size: 1.5rem; margin-bottom: 4px;">{{ $kegiatan->jenis_icon }}</div>
                             <strong>{{ ucwords(str_replace('_', ' ', $kegiatan->jenis_kegiatan)) }}</strong>
+                            @if($kegiatan->link_dokumen)
+                                <a href="{{ $kegiatan->link_dokumen }}" target="_blank" title="Buka Link Dokumen" class="ms-1" style="color: #007bff;">
+                                    <i class="fas fa-link" style="font-size: 0.8rem;"></i>
+                                </a>
+                            @endif
                         </td>
                         <td>
                             <div>{{ Str::limit($kegiatan->judul_kegiatan ?? $kegiatan->nama_jurnal ?? $kegiatan->jabatan_struktural ?? '-', 40) }}</div>

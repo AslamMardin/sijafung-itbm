@@ -59,7 +59,7 @@ class PelaksanaanPenelitianController extends Controller
 
         // Calculate AK
         $record = new PelaksanaanPenelitian($data);
-        $data['angka_kredit'] = $record->calculateAngkaKredit();
+        $data['angka_kredit'] = $record->calculateAngkaKredit($this->user());
 
         PelaksanaanPenelitian::create($data);
         
@@ -93,7 +93,7 @@ class PelaksanaanPenelitianController extends Controller
 
         // Update and recalculate AK
         $penelitian->update($data);
-        $penelitian->angka_kredit = $penelitian->calculateAngkaKredit();
+        $penelitian->angka_kredit = $penelitian->calculateAngkaKredit($this->user());
         $penelitian->save();
         
         $jenisLabel = PelaksanaanPenelitian::jenisKegiatanOptions()[$jenisKegiatan];
@@ -156,6 +156,7 @@ class PelaksanaanPenelitianController extends Controller
                 'lama_kegiatan_tahun' => 'nullable|integer|min:0',
                 'peran' => 'required|in:ketua,anggota',
                 'jumlah_anggota' => 'nullable|integer|min:0',
+                'link_dokumen' => 'nullable|url|max:255',
             ]),
             
             'publikasi_karya' => array_merge($baseRules, [
@@ -165,6 +166,7 @@ class PelaksanaanPenelitianController extends Controller
                 'tanggal_terbit' => 'required|date',
                 'peran_penulis' => 'required|in:penulis,editor,penerjemah',
                 'jumlah_anggota' => 'nullable|integer|min:0',
+                'link_dokumen' => 'nullable|url|max:255',
             ]),
             
             'paten_hki' => array_merge($baseRules, [

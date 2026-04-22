@@ -114,8 +114,13 @@
     <div class="stat-card">
         <div class="stat-icon blue"><i class="fas fa-calculator"></i></div>
         <div class="stat-info">
-            <div class="stat-value">{{ number_format($stats['ak_total'],1) }}</div>
-            <div class="stat-label">Total AK Disetujui</div>
+            <div class="stat-value">
+                {{ number_format($stats['ak_total'],1) }}
+                @if($stats['ak_pending'] > 0)
+                    <small style="font-size: 0.8rem; color: #666; font-weight: normal;">+ {{ number_format($stats['ak_pending'],1) }} est.</small>
+                @endif
+            </div>
+            <div class="stat-label">Total AK (Disetujui)</div>
         </div>
     </div>
 </div>
@@ -180,7 +185,7 @@
     <div class="card">
         <div class="card-header">
             <h3 class="card-title">Kegiatan Terbaru</h3>
-            <a href="{{ route('dosen.kegiatan.index') }}" class="btn btn-outline btn-sm">Lihat Semua</a>
+            <a href="{{ route('dosen.pendidikan.index') }}" class="btn btn-outline btn-sm">Lihat Semua</a>
         </div>
         <div class="table-wrap">
             <table>
@@ -217,7 +222,7 @@
                 <div style="font-size:2rem;margin-bottom:10px">➕</div>
                 <h4 style="color:var(--maroon-dark);margin-bottom:8px;font-family:'Playfair Display',serif">Input Kegiatan</h4>
                 <p style="font-size:0.82rem;color:var(--text-muted);margin-bottom:14px">Tambah kegiatan Tri Dharma baru</p>
-                <a href="{{ route('dosen.kegiatan.create') }}" class="btn btn-primary" style="width:100%">
+                <a href="{{ route('dosen.pendidikan.index') }}" class="btn btn-primary" style="width:100%">
                     <i class="fas fa-plus"></i> Input Sekarang
                 </a>
             </div>

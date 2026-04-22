@@ -75,6 +75,16 @@ class PelaksanaanPendidikan extends Model
         };
     }
 
+    public function getKategoriIconAttribute(): string
+    {
+        return '🎓';
+    }
+
+    public function getKategoriAttribute(): string
+    {
+        return 'Pendidikan';
+    }
+
     // Scope untuk filter
     public function scopeJenisKegiatan($query, $jenis)
     {
@@ -104,24 +114,10 @@ class PelaksanaanPendidikan extends Model
     }
 
     // Helper: Calculate AK based on SKS and role
-    public function calculateAngkaKredit(): float
+    public function calculateAngkaKredit(?User $user = null): float
     {
-        if ($this->kategori) {
-            $ak = $this->kategori->angka_kredit;
-            
-            // Jika berdasarkan SKS (pengajaran)
-            if ($this->sks && $this->kategori->satuan === 'SKS') {
-                $ak = $ak * $this->sks;
-            }
-            
-            // Jika anggota, bagi dengan jumlah anggota
-            if ($this->peran === 'anggota' && $this->jumlah_anggota > 1) {
-                $ak = $ak / $this->jumlah_anggota;
-            }
-            
-            return round($ak, 2);
-        }
-        
-        return 0;
+        $service = app(\App\Services\AngkaKreditService::class);
+        $user = $user ?? $this->user;
+        return $service->calculate('Pelaksanaan Pendidikan', $this->toArray(), $user);
     }
 }

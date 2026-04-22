@@ -55,6 +55,16 @@ class PelaksanaanPenelitian extends Model
         };
     }
 
+    public function getKategoriIconAttribute(): string
+    {
+        return '🔬';
+    }
+
+    public function getKategoriAttribute(): string
+    {
+        return 'Penelitian';
+    }
+
     // Scope untuk filter
     public function scopeJenisKegiatan($query, $jenis)
     {
@@ -77,26 +87,10 @@ class PelaksanaanPenelitian extends Model
     }
 
     // Helper: Calculate AK based on role
-    public function calculateAngkaKredit(): float
+    public function calculateAngkaKredit(?User $user = null): float
     {
-        if ($this->kategori) {
-            $ak = $this->kategori->angka_kredit;
-            
-            // Jika anggota, bagi dengan jumlah anggota
-            if ($this->peran === 'anggota' && $this->jumlah_anggota > 1) {
-                $ak = $ak / $this->jumlah_anggota;
-            }
-            
-            // Jika bukan penulis utama
-            if ($this->peran_penulis === 'editor') {
-                $ak = $ak * 0.5;
-            } elseif ($this->peran_penulis === 'penerjemah') {
-                $ak = $ak * 0.3;
-            }
-            
-            return round($ak, 2);
-        }
-        
-        return 0;
+        $service = app(\App\Services\AngkaKreditService::class);
+        $user = $user ?? $this->user;
+        return $service->calculate('Pelaksanaan Penelitian', $this->toArray(), $user);
     }
 }

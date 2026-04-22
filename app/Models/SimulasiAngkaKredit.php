@@ -73,15 +73,16 @@ class SimulasiAngkaKredit extends Model
 
     public static function hitungSimulasi(User $user, string $periode_mulai, string $periode_selesai): array
     {
-        $kegiatan = $user->kegiatanTriDharma()
-            ->where('status', 'Disetujui')
-            ->whereBetween('tanggal_mulai', [$periode_mulai, $periode_selesai])
-            ->get();
+        $p = $user->pelaksanaanPendidikan()->where('status', 'Disetujui')->whereBetween('created_at', [$periode_mulai, $periode_selesai])->get();
+        $r = $user->pelaksanaanPenelitian()->where('status', 'Disetujui')->whereBetween('created_at', [$periode_mulai, $periode_selesai])->get();
+        $m = $user->pelaksanaanPengabdian()->where('status', 'Disetujui')->whereBetween('created_at', [$periode_mulai, $periode_selesai])->get();
 
-        $ak_pendidikan  = $kegiatan->where('kategori', 'Pendidikan')->sum('angka_kredit');
-        $ak_penelitian  = $kegiatan->where('kategori', 'Penelitian')->sum('angka_kredit');
-        $ak_pengabdian  = $kegiatan->where('kategori', 'Pengabdian Masyarakat')->sum('angka_kredit');
+        $ak_pendidikan  = $p->sum('angka_kredit');
+        $ak_penelitian  = $r->sum('angka_kredit');
+        $ak_pengabdian  = $m->sum('angka_kredit');
         $ak_total       = $ak_pendidikan + $ak_penelitian + $ak_pengabdian;
+
+        $kegiatan = $p->concat($r)->concat($m);
 
         $jabatan_target  = $user->jabatanBerikutnya();
         $ak_dibutuhkan   = $user->angkaKreditDibutuhkan();

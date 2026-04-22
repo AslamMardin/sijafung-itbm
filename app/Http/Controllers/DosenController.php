@@ -19,24 +19,48 @@ class DosenController extends Controller
         $user    = $this->user();
         $akPerKategori = $user->angkaKreditPerKategori();
 
+        $pendidikanCount = $user->pelaksanaanPendidikan()->count();
+        $penelitianCount = $user->pelaksanaanPenelitian()->count();
+        $pengabdianCount = $user->pelaksanaanPengabdian()->count();
+
+        $pendidikanPending = $user->pelaksanaanPendidikan()->where('status', 'Pending')->count();
+        $penelitianPending = $user->pelaksanaanPenelitian()->where('status', 'Pending')->count();
+        $pengabdianPending = $user->pelaksanaanPengabdian()->where('status', 'Pending')->count();
+
+        $pendidikanDisetujui = $user->pelaksanaanPendidikan()->where('status', 'Disetujui')->count();
+        $penelitianDisetujui = $user->pelaksanaanPenelitian()->where('status', 'Disetujui')->count();
+        $pengabdianDisetujui = $user->pelaksanaanPengabdian()->where('status', 'Disetujui')->count();
+
         $stats = [
-            'total_kegiatan'   => $user->kegiatanTriDharma()->count(),
-            'pending'          => $user->kegiatanTriDharma()->where('status', 'Pending')->count(),
-            'disetujui'        => $user->kegiatanTriDharma()->where('status', 'Disetujui')->count(),
-            'ditolak'          => $user->kegiatanTriDharma()->where('status', 'Ditolak')->count(),
+            'total_kegiatan'   => $pendidikanCount + $penelitianCount + $pengabdianCount,
+            'pending'          => $pendidikanPending + $penelitianPending + $pengabdianPending,
+            'disetujui'        => $pendidikanDisetujui + $penelitianDisetujui + $pengabdianDisetujui,
             'ak_total'         => $user->totalAngkaKreditDisetujui(),
+            'ak_pending'       => $user->totalAngkaKreditPending(),
             'ak_dibutuhkan'    => $user->angkaKreditDibutuhkan(),
             'jabatan_target'   => $user->jabatanBerikutnya(),
             'ak_pendidikan'    => $akPerKategori['Pendidikan'] ?? 0,
             'ak_penelitian'    => $akPerKategori['Penelitian'] ?? 0,
-            'ak_pengabdian'    => $akPerKategori['Pengabdian Masyarakat'] ?? 0,
+            'ak_pengabdian'    => $akPerKategori['Pengabdian'] ?? 0,
         ];
 
-        $kegiatan_terbaru = $user->kegiatanTriDharma()->latest()->limit(6)->get();
+        // Combine latest activities from all 3 tables
+        $p = $user->pelaksanaanPendidikan()->latest()->limit(5)->get();
+        $r = $user->pelaksanaanPenelitian()->latest()->limit(5)->get();
+        $m = $user->pelaksanaanPengabdian()->latest()->limit(5)->get();
+
+        $kegiatan_terbaru = $p->concat($r)->concat($m)->sortByDesc('created_at')->take(6);
+        
+        // Add dynamic name attribute
+        $kegiatan_terbaru->each(function($k) {
+            $k->nama_kegiatan = $k->judul_kegiatan ?? $k->mata_kuliah ?? $k->judul_bimbingan ?? $k->judul_pengujian ?? $k->judul_bahan_ajar ?? $k->nama_jurnal ?? $k->jabatan_struktural ?? 'Kegiatan';
+            $k->tanggal_mulai = $k->created_at; 
+        });
         $simulasi_terakhir = $user->simulasiAngkaKredit()->latest()->first();
 
         return view('dosen.dashboard', compact('stats', 'kegiatan_terbaru', 'simulasi_terakhir'));
     }
+
 
     // ── KEGIATAN ──────────────────────────────────────────────
     public function kegiatanIndex(Request $request)

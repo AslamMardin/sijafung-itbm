@@ -89,6 +89,15 @@
                 </div>
             </div>
 
+            <div class="form-group mb-3">
+                <label for="link_dokumen" class="form-label">Link Dokumen (Bukti Fisik)</label>
+                <input type="url" name="link_dokumen" id="link_dokumen" class="form-control @error('link_dokumen') is-invalid @enderror" 
+                       value="{{ old('link_dokumen', $pendidikan->link_dokumen) }}" placeholder="https://drive.google.com/...">
+                @error('link_dokumen')
+                    <div class="invalid-feedback">{{ $message }}</div>
+                @enderror
+            </div>
+
             <div class="alert alert-warning">
                 <i class="fas fa-info-circle"></i> <strong>Status:</strong> <span class="badge badge-{{ $pendidikan->badge_color }}">{{ $pendidikan->status }}</span>
                 @if($pendidikan->catatan_admin)

@@ -17,27 +17,37 @@ class AdminController extends Controller
     {
         $stats = [
             'total_dosen'    => User::where('role', 'dosen')->count(),
-            'total_kegiatan' => KegiatanTriDharma::count() + PelaksanaanPendidikan::count() + PelaksanaanPenelitian::count() + PelaksanaanPengabdian::count(),
+            'total_kegiatan' => PelaksanaanPendidikan::count() + PelaksanaanPenelitian::count() + PelaksanaanPengabdian::count(),
+            'pending'          => PelaksanaanPendidikan::where('status', 'Pending')->count() + PelaksanaanPenelitian::where('status', 'Pending')->count() + PelaksanaanPengabdian::where('status', 'Pending')->count(),
             'pending_pendidikan' => PelaksanaanPendidikan::where('status', 'Pending')->count(),
             'pending_penelitian' => PelaksanaanPenelitian::where('status', 'Pending')->count(),
             'pending_pengabdian' => PelaksanaanPengabdian::where('status', 'Pending')->count(),
-            'disetujui'      => KegiatanTriDharma::where('status', 'Disetujui')->count() + PelaksanaanPendidikan::where('status', 'Disetujui')->count() + PelaksanaanPenelitian::where('status', 'Disetujui')->count() + PelaksanaanPengabdian::where('status', 'Disetujui')->count(),
-            'ditolak'        => KegiatanTriDharma::where('status', 'Ditolak')->count() + PelaksanaanPendidikan::where('status', 'Ditolak')->count() + PelaksanaanPenelitian::where('status', 'Ditolak')->count() + PelaksanaanPengabdian::where('status', 'Ditolak')->count(),
+            'disetujui'      => PelaksanaanPendidikan::where('status', 'Disetujui')->count() + PelaksanaanPenelitian::where('status', 'Disetujui')->count() + PelaksanaanPengabdian::where('status', 'Disetujui')->count(),
+            'ditolak'        => PelaksanaanPendidikan::where('status', 'Ditolak')->count() + PelaksanaanPenelitian::where('status', 'Ditolak')->count() + PelaksanaanPengabdian::where('status', 'Ditolak')->count(),
             'total_simulasi' => SimulasiAngkaKredit::count(),
         ];
 
         // Get latest activities from all 3 tables
-        $pendidikan = PelaksanaanPendidikan::with('user')->latest()->limit(3)->get()->map(fn($k) => (object) array_merge($k->toArray(), ['sumber' => 'Pendidikan']));
-        $penelitian = PelaksanaanPenelitian::with('user')->latest()->limit(3)->get()->map(fn($k) => (object) array_merge($k->toArray(), ['sumber' => 'Penelitian']));
-        $pengabdian = PelaksanaanPengabdian::with('user')->latest()->limit(3)->get()->map(fn($k) => (object) array_merge($k->toArray(), ['sumber' => 'Pengabdian']));
+        $pendidikan = PelaksanaanPendidikan::with('user')->latest()->limit(5)->get();
+        $penelitian = PelaksanaanPenelitian::with('user')->latest()->limit(5)->get();
+        $pengabdian = PelaksanaanPengabdian::with('user')->latest()->limit(5)->get();
         
         $kegiatan_terbaru = $pendidikan->concat($penelitian)->concat($pengabdian)->sortByDesc('created_at')->take(8)->values();
+        
+        // Add dynamic name attribute for consistent display
+        $kegiatan_terbaru->each(function($k) {
+            $k->nama_kegiatan = $k->judul_kegiatan ?? $k->mata_kuliah ?? $k->judul_bimbingan ?? $k->judul_pengujian ?? $k->judul_bahan_ajar ?? $k->nama_jurnal ?? $k->jabatan_struktural ?? 'Kegiatan';
+        });
 
         $dosen_aktif = User::where('role', 'dosen')
-            ->withCount(['kegiatanTriDharma as kegiatan_count'])
-            ->orderByDesc('kegiatan_count')
-            ->limit(5)
-            ->get();
+            ->withCount(['pelaksanaanPendidikan', 'pelaksanaanPenelitian', 'pelaksanaanPengabdian'])
+            ->get()
+            ->map(function($user) {
+                $user->kegiatan_count = $user->pelaksanaan_pendidikan_count + $user->pelaksanaan_penelitian_count + $user->pelaksanaan_pengabdian_count;
+                return $user;
+            })
+            ->sortByDesc('kegiatan_count')
+            ->take(5);
 
         $per_jabatan = User::where('role', 'dosen')
             ->selectRaw('jabatan_fungsional, COUNT(*) as total')
@@ -51,9 +61,16 @@ class AdminController extends Controller
     public function dosenIndex()
     {
         $dosens = User::where('role', 'dosen')
-            ->withCount('kegiatanTriDharma')
+            ->withCount(['pelaksanaanPendidikan', 'pelaksanaanPenelitian', 'pelaksanaanPengabdian'])
             ->latest()
             ->paginate(10);
+        
+        // Add total_kegiatan attribute manually
+        $dosens->getCollection()->transform(function($dosen) {
+            $dosen->kegiatan_tri_dharma_count = $dosen->pelaksanaan_pendidikan_count + $dosen->pelaksanaan_penelitian_count + $dosen->pelaksanaan_pengabdian_count;
+            return $dosen;
+        });
+
         return view('admin.dosen.index', compact('dosens'));
     }
 
@@ -168,21 +185,36 @@ class AdminController extends Controller
             $query = PelaksanaanPendidikan::with(['user', 'kategori']);
             if ($request->filled('status')) $query->where('status', $request->status);
             if ($request->filled('dosen_id')) $query->where('user_id', $request->dosen_id);
-            $pendidikan = $query->latest()->get()->map(fn($k) => (object) array_merge($k->toArray(), ['sumber' => 'Pendidikan', 'sumber_key' => 'pendidikan']));
+            $pendidikan = $query->latest()->get()->map(function($k) {
+                $k->sumber = 'Pendidikan';
+                $k->sumber_key = 'pendidikan';
+                $k->nama_kegiatan = $k->judul_kegiatan ?? $k->mata_kuliah ?? $k->judul_bimbingan ?? $k->judul_pengujian ?? $k->judul_bahan_ajar ?? $k->nama_jurnal ?? $k->jabatan_struktural ?? 'Kegiatan';
+                return $k;
+            });
         }
 
         if ($sumber === 'semua' || $sumber === 'penelitian') {
             $query = PelaksanaanPenelitian::with(['user', 'kategori']);
             if ($request->filled('status')) $query->where('status', $request->status);
             if ($request->filled('dosen_id')) $query->where('user_id', $request->dosen_id);
-            $penelitian = $query->latest()->get()->map(fn($k) => (object) array_merge($k->toArray(), ['sumber' => 'Penelitian', 'sumber_key' => 'penelitian']));
+            $penelitian = $query->latest()->get()->map(function($k) {
+                $k->sumber = 'Penelitian';
+                $k->sumber_key = 'penelitian';
+                $k->nama_kegiatan = $k->judul_kegiatan ?? $k->mata_kuliah ?? $k->judul_bimbingan ?? $k->judul_pengujian ?? $k->judul_bahan_ajar ?? $k->nama_jurnal ?? $k->jabatan_struktural ?? 'Kegiatan';
+                return $k;
+            });
         }
 
         if ($sumber === 'semua' || $sumber === 'pengabdian') {
             $query = PelaksanaanPengabdian::with(['user', 'kategori']);
             if ($request->filled('status')) $query->where('status', $request->status);
             if ($request->filled('dosen_id')) $query->where('user_id', $request->dosen_id);
-            $pengabdian = $query->latest()->get()->map(fn($k) => (object) array_merge($k->toArray(), ['sumber' => 'Pengabdian', 'sumber_key' => 'pengabdian']));
+            $pengabdian = $query->latest()->get()->map(function($k) {
+                $k->sumber = 'Pengabdian';
+                $k->sumber_key = 'pengabdian';
+                $k->nama_kegiatan = $k->judul_kegiatan ?? $k->mata_kuliah ?? $k->judul_bimbingan ?? $k->judul_pengujian ?? $k->judul_bahan_ajar ?? $k->nama_jurnal ?? $k->jabatan_struktural ?? 'Kegiatan';
+                return $k;
+            });
         }
 
         $kegiatans = $pendidikan->concat($penelitian)->concat($pengabdian)->sortByDesc('created_at')->values();
@@ -195,7 +227,7 @@ class AdminController extends Controller
     public function verifikasiShow($sumberKey, $id)
     {
         $model = $this->getModel($sumberKey);
-        $kegiatan = $model->with(['user', 'kategori'])->findOrFail($id);
+        $kegiatan = $model::with(['user', 'kategori'])->findOrFail($id);
         
         return view('admin.verifikasi.show', compact('kegiatan', 'sumberKey'));
     }
@@ -204,7 +236,7 @@ class AdminController extends Controller
     public function verifikasiApprove(Request $request, $sumberKey, $id)
     {
         $model = $this->getModel($sumberKey);
-        $kegiatan = $model->findOrFail($id);
+        $kegiatan = $model::findOrFail($id);
 
         $request->validate([
             'status' => 'required|in:Disetujui,Ditolak',
@@ -215,7 +247,7 @@ class AdminController extends Controller
         $kegiatan->update([
             'status' => $request->status,
             'catatan_admin' => $request->catatan_admin,
-            'angka_kredit' => $request->angka_kredit ?? $kegiatan->calculateAngkaKredit(),
+            'angka_kredit' => $request->angka_kredit ?? $kegiatan->calculateAngkaKredit($kegiatan->user),
         ]);
 
         // Update user's cumulative AK if approved

@@ -100,7 +100,15 @@
                 @enderror
             </div>
 
-        </div>
+                    <div class="form-group mb-3">
+                <label for="link_dokumen" class="form-label">Link Dokumen (Bukti Fisik)</label>
+                <input type="url" name="link_dokumen" id="link_dokumen" class="form-control @error('link_dokumen') is-invalid @enderror" 
+                       value="{{ old('link_dokumen', $pengabdian->link_dokumen) }}" placeholder="https://drive.google.com/...">
+                @error('link_dokumen')
+                    <div class="invalid-feedback">{{ $message }}</div>
+                @enderror
+            </div>
+            </div>
 
         <div class="card-footer">
             <button type="submit" class="btn btn-primary">

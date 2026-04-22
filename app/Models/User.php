@@ -78,6 +78,23 @@ class User extends Authenticatable
         return round($akPendidikan + $akPenelitian + $akPengabdian, 2);
     }
 
+    public function totalAngkaKreditPending(): float
+    {
+        $akPendidikan = $this->pelaksanaanPendidikan()
+            ->where('status', 'Pending')
+            ->sum('angka_kredit');
+            
+        $akPenelitian = $this->pelaksanaanPenelitian()
+            ->where('status', 'Pending')
+            ->sum('angka_kredit');
+            
+        $akPengabdian = $this->pelaksanaanPengabdian()
+            ->where('status', 'Pending')
+            ->sum('angka_kredit');
+        
+        return round($akPendidikan + $akPenelitian + $akPengabdian, 2);
+    }
+
     public function angkaKreditPerKategori(): array
     {
         return [

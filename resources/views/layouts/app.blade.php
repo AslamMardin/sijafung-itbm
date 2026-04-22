@@ -96,14 +96,6 @@
                     class="nav-link {{ request()->routeIs('admin.dosen.*') ? 'active' : '' }}">
                     <i class="fas fa-user-tie"></i> Data Dosen
                 </a>
-                <a href="{{ route('admin.kegiatan.index') }}"
-                    class="nav-link {{ request()->routeIs('admin.kegiatan.*') ? 'active' : '' }}">
-                    <i class="fas fa-clipboard-list"></i> Kegiatan Tri Dharma
-                    @php $pending = \App\Models\KegiatanTriDharma::where('status','Pending')->count() @endphp
-                    @if ($pending > 0)
-                        <span class="nav-badge">{{ $pending }}</span>
-                    @endif
-                </a>
                 <a href="{{ route('admin.verifikasi.index') }}"
                     class="nav-link {{ request()->routeIs('admin.verifikasi.*') ? 'active' : '' }}">
                     <i class="fas fa-clipboard-check"></i> Verifikasi Kegiatan

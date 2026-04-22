@@ -59,7 +59,7 @@ class PelaksanaanPengabdianController extends Controller
 
         // Calculate AK
         $record = new PelaksanaanPengabdian($data);
-        $data['angka_kredit'] = $record->calculateAngkaKredit();
+        $data['angka_kredit'] = $record->calculateAngkaKredit($this->user());
 
         PelaksanaanPengabdian::create($data);
         
@@ -93,7 +93,7 @@ class PelaksanaanPengabdianController extends Controller
 
         // Update and recalculate AK
         $pengabdian->update($data);
-        $pengabdian->angka_kredit = $pengabdian->calculateAngkaKredit();
+        $pengabdian->angka_kredit = $pengabdian->calculateAngkaKredit($this->user());
         $pengabdian->save();
         
         $jenisLabel = PelaksanaanPengabdian::jenisKegiatanOptions()[$jenisKegiatan];
@@ -157,6 +157,7 @@ class PelaksanaanPengabdianController extends Controller
                 'lama_kegiatan_tahun' => 'nullable|integer|min:0',
                 'peran' => 'required|in:ketua,anggota',
                 'jumlah_anggota' => 'nullable|integer|min:0',
+                'link_dokumen' => 'nullable|url|max:255',
             ]),
             
             'pembicara' => array_merge($baseRules, [
@@ -167,6 +168,7 @@ class PelaksanaanPengabdianController extends Controller
                 'nama_temu_ilmiah' => 'required|string|max:255',
                 'penyelenggara' => 'required|string|max:255',
                 'tanggal_pelaksanaan' => 'required|date',
+                'link_dokumen' => 'nullable|url|max:255',
             ]),
             
             'pengelola_jurnal' => array_merge($baseRules, [
@@ -177,6 +179,7 @@ class PelaksanaanPengabdianController extends Controller
                 'tanggal_selesai' => 'nullable|date|after_or_equal:terhitung_mulai',
                 'status_aktif' => 'nullable|boolean',
                 'peran_jurnal' => 'required|string|max:255',
+                'link_dokumen' => 'nullable|url|max:255',
             ]),
             
             'jabatan_struktural' => array_merge($baseRules, [
@@ -186,6 +189,7 @@ class PelaksanaanPengabdianController extends Controller
                 'terhitung' => 'nullable|date',
                 'tanggal_mulai' => 'required|date',
                 'terhitung_tanggal_selesai' => 'nullable|date|after_or_equal:tanggal_mulai',
+                'link_dokumen' => 'nullable|url|max:255',
             ]),
         ];
 
