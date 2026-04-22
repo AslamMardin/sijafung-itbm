@@ -6,7 +6,6 @@ use App\Models\KegiatanTriDharma;
 use App\Models\SimulasiAngkaKredit;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Storage;
 
 class DosenController extends Controller
 {
@@ -72,13 +71,7 @@ class DosenController extends Controller
             'tingkat'                => 'nullable|string',
             'peran'                  => 'nullable|string',
             'angka_kredit'           => 'required|numeric|min:0',
-            'bukti_dokumen'          => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120',
         ]);
-
-        if ($request->hasFile('bukti_dokumen')) {
-            $data['bukti_dokumen'] = $request->file('bukti_dokumen')
-                ->store('bukti_dokumen', 'public');
-        }
 
         $data['user_id'] = $this->user()->id;
         $data['status']  = 'Pending';

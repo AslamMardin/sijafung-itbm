@@ -30,7 +30,7 @@
     <div class="card">
         <div class="card-header"><h3 class="card-title">Form Input Kegiatan</h3></div>
         <div class="card-body">
-            <form method="POST" action="{{ route('dosen.kegiatan.store') }}" enctype="multipart/form-data">
+            <form method="POST" action="{{ route('dosen.kegiatan.store') }}">
                 @csrf
 
                 <div class="form-group">
@@ -107,12 +107,6 @@
                 <div class="form-group">
                     <label class="form-label">Deskripsi</label>
                     <textarea name="deskripsi" class="form-control" rows="3" placeholder="Penjelasan singkat tentang kegiatan ini...">{{ old('deskripsi') }}</textarea>
-                </div>
-
-                <div class="form-group">
-                    <label class="form-label">Bukti Dokumen</label>
-                    <input type="file" name="bukti_dokumen" class="form-control" accept=".pdf,.jpg,.jpeg,.png">
-                    <small style="color:var(--text-muted);font-size:0.78rem">PDF/JPG/PNG, maks 5MB</small>
                 </div>
 
                 <div style="display:flex;gap:12px;padding-top:8px">

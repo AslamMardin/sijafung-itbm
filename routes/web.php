@@ -3,6 +3,9 @@
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\DosenController;
+use App\Http\Controllers\PelaksanaanPendidikanController;
+use App\Http\Controllers\PelaksanaanPenelitianController;
+use App\Http\Controllers\PelaksanaanPengabdianController;
 use Illuminate\Support\Facades\Route;
 
 // ── Auth ──────────────────────────────────────────────────────
@@ -28,7 +31,14 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'role:admin'])->grou
         Route::delete('/{dosen}',     [AdminController::class, 'dosenDestroy'])->name('destroy');
     });
 
-    // Manajemen Kegiatan
+    // Verifikasi Kegiatan (3 tabel baru)
+    Route::prefix('verifikasi')->name('verifikasi.')->group(function () {
+        Route::get('/', [AdminController::class, 'verifikasiIndex'])->name('index');
+        Route::get('/{sumberKey}/{id}', [AdminController::class, 'verifikasiShow'])->name('show');
+        Route::patch('/{sumberKey}/{id}/approve', [AdminController::class, 'verifikasiApprove'])->name('approve');
+    });
+
+    // Manajemen Kegiatan (Legacy)
     Route::prefix('kegiatan')->name('kegiatan.')->group(function () {
         Route::get('/',                         [AdminController::class, 'kegiatanIndex'])->name('index');
         Route::get('/{kegiatan}',               [AdminController::class, 'kegiatanShow'])->name('show');
@@ -40,7 +50,37 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'role:admin'])->grou
 Route::prefix('dosen')->name('dosen.')->middleware(['auth', 'role:dosen'])->group(function () {
     Route::get('/dashboard', [DosenController::class, 'dashboard'])->name('dashboard');
 
-    // Kegiatan Tri Dharma
+    // Pelaksanaan Pendidikan (Menu SISTER)
+    Route::prefix('pendidikan')->name('pendidikan.')->group(function () {
+        Route::get('/', [PelaksanaanPendidikanController::class, 'index'])->name('index');
+        Route::get('/{jenisKegiatan}/create', [PelaksanaanPendidikanController::class, 'create'])->name('create');
+        Route::post('/{jenisKegiatan}', [PelaksanaanPendidikanController::class, 'store'])->name('store');
+        Route::get('/{jenisKegiatan}/{pendidikan}/edit', [PelaksanaanPendidikanController::class, 'edit'])->name('edit');
+        Route::put('/{jenisKegiatan}/{pendidikan}', [PelaksanaanPendidikanController::class, 'update'])->name('update');
+        Route::delete('/{pendidikan}', [PelaksanaanPendidikanController::class, 'destroy'])->name('destroy');
+    });
+
+    // Pelaksanaan Penelitian (Menu SISTER)
+    Route::prefix('penelitian')->name('penelitian.')->group(function () {
+        Route::get('/', [PelaksanaanPenelitianController::class, 'index'])->name('index');
+        Route::get('/{jenisKegiatan}/create', [PelaksanaanPenelitianController::class, 'create'])->name('create');
+        Route::post('/{jenisKegiatan}', [PelaksanaanPenelitianController::class, 'store'])->name('store');
+        Route::get('/{jenisKegiatan}/{penelitian}/edit', [PelaksanaanPenelitianController::class, 'edit'])->name('edit');
+        Route::put('/{jenisKegiatan}/{penelitian}', [PelaksanaanPenelitianController::class, 'update'])->name('update');
+        Route::delete('/{penelitian}', [PelaksanaanPenelitianController::class, 'destroy'])->name('destroy');
+    });
+
+    // Pelaksanaan Pengabdian (Menu SISTER)
+    Route::prefix('pengabdian')->name('pengabdian.')->group(function () {
+        Route::get('/', [PelaksanaanPengabdianController::class, 'index'])->name('index');
+        Route::get('/{jenisKegiatan}/create', [PelaksanaanPengabdianController::class, 'create'])->name('create');
+        Route::post('/{jenisKegiatan}', [PelaksanaanPengabdianController::class, 'store'])->name('store');
+        Route::get('/{jenisKegiatan}/{pengabdian}/edit', [PelaksanaanPengabdianController::class, 'edit'])->name('edit');
+        Route::put('/{jenisKegiatan}/{pengabdian}', [PelaksanaanPengabdianController::class, 'update'])->name('update');
+        Route::delete('/{pengabdian}', [PelaksanaanPengabdianController::class, 'destroy'])->name('destroy');
+    });
+
+    // Kegiatan Tri Dharma (Legacy - tetap dipertahankan)
     Route::prefix('kegiatan')->name('kegiatan.')->group(function () {
         Route::get('/',              [DosenController::class, 'kegiatanIndex'])->name('index');
         Route::get('/create',        [DosenController::class, 'kegiatanCreate'])->name('create');

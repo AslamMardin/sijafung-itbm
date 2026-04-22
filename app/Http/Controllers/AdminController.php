@@ -5,6 +5,9 @@ namespace App\Http\Controllers;
 use App\Models\KegiatanTriDharma;
 use App\Models\SimulasiAngkaKredit;
 use App\Models\User;
+use App\Models\PelaksanaanPendidikan;
+use App\Models\PelaksanaanPenelitian;
+use App\Models\PelaksanaanPengabdian;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 
@@ -14,17 +17,21 @@ class AdminController extends Controller
     {
         $stats = [
             'total_dosen'    => User::where('role', 'dosen')->count(),
-            'total_kegiatan' => KegiatanTriDharma::count(),
-            'pending'        => KegiatanTriDharma::where('status', 'Pending')->count(),
-            'disetujui'      => KegiatanTriDharma::where('status', 'Disetujui')->count(),
-            'ditolak'        => KegiatanTriDharma::where('status', 'Ditolak')->count(),
+            'total_kegiatan' => KegiatanTriDharma::count() + PelaksanaanPendidikan::count() + PelaksanaanPenelitian::count() + PelaksanaanPengabdian::count(),
+            'pending_pendidikan' => PelaksanaanPendidikan::where('status', 'Pending')->count(),
+            'pending_penelitian' => PelaksanaanPenelitian::where('status', 'Pending')->count(),
+            'pending_pengabdian' => PelaksanaanPengabdian::where('status', 'Pending')->count(),
+            'disetujui'      => KegiatanTriDharma::where('status', 'Disetujui')->count() + PelaksanaanPendidikan::where('status', 'Disetujui')->count() + PelaksanaanPenelitian::where('status', 'Disetujui')->count() + PelaksanaanPengabdian::where('status', 'Disetujui')->count(),
+            'ditolak'        => KegiatanTriDharma::where('status', 'Ditolak')->count() + PelaksanaanPendidikan::where('status', 'Ditolak')->count() + PelaksanaanPenelitian::where('status', 'Ditolak')->count() + PelaksanaanPengabdian::where('status', 'Ditolak')->count(),
             'total_simulasi' => SimulasiAngkaKredit::count(),
         ];
 
-        $kegiatan_terbaru = KegiatanTriDharma::with('user')
-            ->latest()
-            ->limit(8)
-            ->get();
+        // Get latest activities from all 3 tables
+        $pendidikan = PelaksanaanPendidikan::with('user')->latest()->limit(3)->get()->map(fn($k) => (object) array_merge($k->toArray(), ['sumber' => 'Pendidikan']));
+        $penelitian = PelaksanaanPenelitian::with('user')->latest()->limit(3)->get()->map(fn($k) => (object) array_merge($k->toArray(), ['sumber' => 'Penelitian']));
+        $pengabdian = PelaksanaanPengabdian::with('user')->latest()->limit(3)->get()->map(fn($k) => (object) array_merge($k->toArray(), ['sumber' => 'Pengabdian']));
+        
+        $kegiatan_terbaru = $pendidikan->concat($penelitian)->concat($pengabdian)->sortByDesc('created_at')->take(8)->values();
 
         $dosen_aktif = User::where('role', 'dosen')
             ->withCount(['kegiatanTriDharma as kegiatan_count'])
@@ -144,5 +151,93 @@ class AdminController extends Controller
         }
 
         return back()->with('success', 'Status kegiatan berhasil diperbarui.');
+    }
+
+    // ── VERIFIKASI KEGIATAN BARU (3 TABEL) ────────────────────
+    
+    // List all pending activities for verification
+    public function verifikasiIndex(Request $request)
+    {
+        $sumber = $request->get('sumber', 'semua'); // semua, pendidikan, penelitian, pengabdian
+        
+        $pendidikan = collect();
+        $penelitian = collect();
+        $pengabdian = collect();
+
+        if ($sumber === 'semua' || $sumber === 'pendidikan') {
+            $query = PelaksanaanPendidikan::with(['user', 'kategori']);
+            if ($request->filled('status')) $query->where('status', $request->status);
+            if ($request->filled('dosen_id')) $query->where('user_id', $request->dosen_id);
+            $pendidikan = $query->latest()->get()->map(fn($k) => (object) array_merge($k->toArray(), ['sumber' => 'Pendidikan', 'sumber_key' => 'pendidikan']));
+        }
+
+        if ($sumber === 'semua' || $sumber === 'penelitian') {
+            $query = PelaksanaanPenelitian::with(['user', 'kategori']);
+            if ($request->filled('status')) $query->where('status', $request->status);
+            if ($request->filled('dosen_id')) $query->where('user_id', $request->dosen_id);
+            $penelitian = $query->latest()->get()->map(fn($k) => (object) array_merge($k->toArray(), ['sumber' => 'Penelitian', 'sumber_key' => 'penelitian']));
+        }
+
+        if ($sumber === 'semua' || $sumber === 'pengabdian') {
+            $query = PelaksanaanPengabdian::with(['user', 'kategori']);
+            if ($request->filled('status')) $query->where('status', $request->status);
+            if ($request->filled('dosen_id')) $query->where('user_id', $request->dosen_id);
+            $pengabdian = $query->latest()->get()->map(fn($k) => (object) array_merge($k->toArray(), ['sumber' => 'Pengabdian', 'sumber_key' => 'pengabdian']));
+        }
+
+        $kegiatans = $pendidikan->concat($penelitian)->concat($pengabdian)->sortByDesc('created_at')->values();
+        $dosens = User::where('role', 'dosen')->get();
+        
+        return view('admin.verifikasi.index', compact('kegiatans', 'dosens', 'sumber'));
+    }
+
+    // Show detail for verification
+    public function verifikasiShow($sumberKey, $id)
+    {
+        $model = $this->getModel($sumberKey);
+        $kegiatan = $model->with(['user', 'kategori'])->findOrFail($id);
+        
+        return view('admin.verifikasi.show', compact('kegiatan', 'sumberKey'));
+    }
+
+    // Approve/Reject activity
+    public function verifikasiApprove(Request $request, $sumberKey, $id)
+    {
+        $model = $this->getModel($sumberKey);
+        $kegiatan = $model->findOrFail($id);
+
+        $request->validate([
+            'status' => 'required|in:Disetujui,Ditolak',
+            'catatan_admin' => 'nullable|string',
+            'angka_kredit' => 'nullable|numeric|min:0',
+        ]);
+
+        $kegiatan->update([
+            'status' => $request->status,
+            'catatan_admin' => $request->catatan_admin,
+            'angka_kredit' => $request->angka_kredit ?? $kegiatan->calculateAngkaKredit(),
+        ]);
+
+        // Update user's cumulative AK if approved
+        if ($request->status === 'Disetujui') {
+            $user = $kegiatan->user;
+            $user->update([
+                'angka_kredit_kumulatif' => $user->totalAngkaKreditDisetujui(),
+            ]);
+        }
+
+        $statusLabel = $request->status === 'Disetujui' ? 'disetujui' : 'ditolak';
+        return back()->with('success', "Kegiatan berhasil {$statusLabel}.");
+    }
+
+    // Helper: Get model by sumber key
+    private function getModel($sumberKey)
+    {
+        return match($sumberKey) {
+            'pendidikan' => PelaksanaanPendidikan::class,
+            'penelitian' => PelaksanaanPenelitian::class,
+            'pengabdian' => PelaksanaanPengabdian::class,
+            default => abort(404, 'Sumber tidak valid'),
+        };
     }
 }

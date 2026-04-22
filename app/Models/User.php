@@ -44,21 +44,53 @@ class User extends Authenticatable
         return $this->hasMany(SimulasiAngkaKredit::class);
     }
 
+    // Relasi ke tabel baru
+    public function pelaksanaanPendidikan()
+    {
+        return $this->hasMany(PelaksanaanPendidikan::class);
+    }
+
+    public function pelaksanaanPenelitian()
+    {
+        return $this->hasMany(PelaksanaanPenelitian::class);
+    }
+
+    public function pelaksanaanPengabdian()
+    {
+        return $this->hasMany(PelaksanaanPengabdian::class);
+    }
+
+    // Helper: Total AK dari semua kegiatan yang disetujui
     public function totalAngkaKreditDisetujui(): float
     {
-        return $this->kegiatanTriDharma()
+        $akPendidikan = $this->pelaksanaanPendidikan()
             ->where('status', 'Disetujui')
             ->sum('angka_kredit');
+            
+        $akPenelitian = $this->pelaksanaanPenelitian()
+            ->where('status', 'Disetujui')
+            ->sum('angka_kredit');
+            
+        $akPengabdian = $this->pelaksanaanPengabdian()
+            ->where('status', 'Disetujui')
+            ->sum('angka_kredit');
+        
+        return round($akPendidikan + $akPenelitian + $akPengabdian, 2);
     }
 
     public function angkaKreditPerKategori(): array
     {
-        return $this->kegiatanTriDharma()
-            ->where('status', 'Disetujui')
-            ->groupBy('kategori')
-            ->selectRaw('kategori, SUM(angka_kredit) as total')
-            ->pluck('total', 'kategori')
-            ->toArray();
+        return [
+            'Pendidikan' => $this->pelaksanaanPendidikan()
+                ->where('status', 'Disetujui')
+                ->sum('angka_kredit'),
+            'Penelitian' => $this->pelaksanaanPenelitian()
+                ->where('status', 'Disetujui')
+                ->sum('angka_kredit'),
+            'Pengabdian' => $this->pelaksanaanPengabdian()
+                ->where('status', 'Disetujui')
+                ->sum('angka_kredit'),
+        ];
     }
 
     public function jabatanBerikutnya(): ?string
@@ -77,5 +109,25 @@ class User extends Authenticatable
             'Profesor'     => ['target' => null, 'ak' => 0],
         ];
         return $syarat[$this->jabatan_fungsional]['ak'] ?? 0;
+    }
+
+    // Helper: Get count of pending activities per category
+    public function getPendingCounts(): array
+    {
+        return [
+            'pendidikan' => $this->pelaksanaanPendidikan()->where('status', 'Pending')->count(),
+            'penelitian' => $this->pelaksanaanPenelitian()->where('status', 'Pending')->count(),
+            'pengabdian' => $this->pelaksanaanPengabdian()->where('status', 'Pending')->count(),
+        ];
+    }
+
+    // Helper: Get total count of approved activities per category
+    public function getApprovedCounts(): array
+    {
+        return [
+            'pendidikan' => $this->pelaksanaanPendidikan()->where('status', 'Disetujui')->count(),
+            'penelitian' => $this->pelaksanaanPenelitian()->where('status', 'Disetujui')->count(),
+            'pengabdian' => $this->pelaksanaanPengabdian()->where('status', 'Disetujui')->count(),
+        ];
     }
 }
