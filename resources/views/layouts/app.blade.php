@@ -16,44 +16,76 @@
     <style>
         /* Submenu Styles for SISTER Menu Structure */
         .nav-submenu {
-            padding: 8px 0;
+            padding: 4px 0 8px;
             margin-bottom: 4px;
+            background: rgba(0,0,0,0.1);
+            border-radius: 8px;
+            margin: 4px 10px;
         }
         .nav-submenu-title {
-            font-size: 0.7rem;
-            padding: 6px 12px;
-            color: rgba(255,255,255,0.5);
+            font-size: 0.65rem;
+            padding: 8px 16px 4px;
+            color: rgba(255,255,255,0.4);
             text-transform: uppercase;
-            letter-spacing: 0.5px;
-            font-weight: 600;
+            letter-spacing: 1px;
+            font-weight: 700;
         }
         .nav-submenu-link {
             display: flex;
             align-items: center;
             gap: 10px;
-            padding: 9px 12px 9px 20px;
-            color: rgba(255,255,255,0.75);
+            padding: 8px 16px;
+            color: rgba(255,255,255,0.65);
             text-decoration: none;
-            font-size: 0.83rem;
+            font-size: 0.8rem;
             transition: all 0.2s;
-            border-left: 3px solid transparent;
+            border-radius: 6px;
+            margin: 2px 8px;
         }
         .nav-submenu-link:hover {
-            background: rgba(255,255,255,0.05);
+            background: rgba(255,255,255,0.08);
             color: #fff;
-            border-left-color: rgba(201,168,76,0.5);
+            transform: translateX(3px);
         }
         .nav-submenu-link.active {
-            background: rgba(201,168,76,0.1);
+            background: rgba(201,168,76,0.15);
             color: #C9A84C;
-            border-left-color: #C9A84C;
-            font-weight: 500;
+            font-weight: 600;
         }
         .nav-submenu-link i {
-            width: 18px;
+            width: 16px;
             text-align: center;
-            font-size: 0.85rem;
-            opacity: 0.85;
+            font-size: 0.8rem;
+            opacity: 0.7;
+        }
+        
+        /* Custom Premium Scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(107,15,26,0.15);
+            border-radius: 10px;
+            transition: background 0.3s;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(107,15,26,0.3);
+        }
+        
+        .sidebar::-webkit-scrollbar-thumb {
+            background: rgba(255,255,255,0.1);
+        }
+        .sidebar::-webkit-scrollbar-thumb:hover {
+            background: rgba(255,255,255,0.2);
+        }
+
+        .sidebar-nav {
+            scrollbar-width: thin;
+            scrollbar-color: rgba(255,255,255,0.1) transparent;
         }
     </style>
     @stack('styles')
@@ -237,10 +269,11 @@
                 {{-- SIMULASI --}}
                 <div class="nav-section-label">Simulasi</div>
                 <a href="{{ route('dosen.simulasi.index') }}"
-                    class="nav-link {{ request()->routeIs('dosen.simulasi.*') ? 'active' : '' }}">
+                    class="nav-link {{ request()->routeIs('dosen.simulasi.index') || request()->routeIs('dosen.simulasi.show') ? 'active' : '' }}">
                     <i class="fas fa-calculator"></i> Simulasi Angka Kredit
                 </a>
-                <a href="{{ route('dosen.simulasi.create') }}" class="nav-link">
+                <a href="{{ route('dosen.simulasi.create') }}" 
+                    class="nav-link {{ request()->routeIs('dosen.simulasi.create') ? 'active' : '' }}">
                     <i class="fas fa-plus-circle"></i> Buat Simulasi Baru
                 </a>
             @endif
