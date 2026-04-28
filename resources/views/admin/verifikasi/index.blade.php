@@ -55,49 +55,40 @@
         </div>
         <div class="card-body bg-light-soft py-3">
             <form method="GET" class="filter-form mb-0">
-                <div class="d-flex flex-wrap align-items-center gap-3">
-                    <div class="d-flex align-items-center gap-2">
-                        <label class="form-label small fw-bold mb-0 text-nowrap">Tri Dharma:</label>
-                        <select name="sumber" class="form-select form-select-sm shadow-sm" style="min-width: 150px;"
-                            onchange="this.form.submit()">
+                <div class="filter-row">
+                    <div class="filter-group">
+                        <label class="filter-label">Tri Dharma</label>
+                        <select name="sumber" class="form-select form-select-sm" onchange="this.form.submit()">
                             <option value="semua" {{ $sumber == 'semua' ? 'selected' : '' }}>Semua Kategori</option>
-                            <option value="pendidikan" {{ $sumber == 'pendidikan' ? 'selected' : '' }}>📚 Pendidikan
-                            </option>
-                            <option value="penelitian" {{ $sumber == 'penelitian' ? 'selected' : '' }}>🔬 Penelitian
-                            </option>
-                            <option value="pengabdian" {{ $sumber == 'pengabdian' ? 'selected' : '' }}>🤝 Pengabdian
-                            </option>
+                            <option value="pendidikan" {{ $sumber == 'pendidikan' ? 'selected' : '' }}>📚 Pendidikan</option>
+                            <option value="penelitian" {{ $sumber == 'penelitian' ? 'selected' : '' }}>🔬 Penelitian</option>
+                            <option value="pengabdian" {{ $sumber == 'pengabdian' ? 'selected' : '' }}>🤝 Pengabdian</option>
                         </select>
                     </div>
-                    <div class="d-flex align-items-center gap-2">
-                        <label class="form-label small fw-bold mb-0 text-nowrap">Status:</label>
-                        <select name="status" class="form-select form-select-sm shadow-sm" style="min-width: 130px;"
-                            onchange="this.form.submit()">
+                    <div class="filter-group">
+                        <label class="filter-label">Status</label>
+                        <select name="status" class="form-select form-select-sm" onchange="this.form.submit()">
                             <option value="">Semua Status</option>
-                            <option value="Pending" {{ request('status') == 'Pending' ? 'selected' : '' }}>⏳ Pending
-                            </option>
-                            <option value="Disetujui" {{ request('status') == 'Disetujui' ? 'selected' : '' }}>✅ Disetujui
-                            </option>
-                            <option value="Ditolak" {{ request('status') == 'Ditolak' ? 'selected' : '' }}>❌ Ditolak
-                            </option>
+                            <option value="Pending" {{ request('status') == 'Pending' ? 'selected' : '' }}>⏳ Pending</option>
+                            <option value="Disetujui" {{ request('status') == 'Disetujui' ? 'selected' : '' }}>✅ Disetujui</option>
+                            <option value="Ditolak" {{ request('status') == 'Ditolak' ? 'selected' : '' }}>❌ Ditolak</option>
                         </select>
                     </div>
-                    <div class="d-flex align-items-center gap-2">
-                        <label class="form-label small fw-bold mb-0 text-nowrap">Dosen:</label>
-                        <select name="dosen_id" class="form-select form-select-sm shadow-sm" style="min-width: 200px;"
-                            onchange="this.form.submit()">
+                    <div class="filter-group">
+                        <label class="filter-label">Dosen</label>
+                        <select name="dosen_id" class="form-select form-select-sm" onchange="this.form.submit()">
                             <option value="">Semua Dosen</option>
                             @foreach ($dosens as $dosen)
-                                <option value="{{ $dosen->id }}"
-                                    {{ request('dosen_id') == $dosen->id ? 'selected' : '' }}>
+                                <option value="{{ $dosen->id }}" {{ request('dosen_id') == $dosen->id ? 'selected' : '' }}>
                                     {{ $dosen->name }}
                                 </option>
                             @endforeach
                         </select>
                     </div>
-                    <div class="ms-auto">
-                        <a href="{{ route('admin.verifikasi.index') }}" class="btn btn-sm btn-outline shadow-sm">
-                            <i class="fas fa-undo"></i> Reset
+                    <div class="filter-group flex-grow-1"></div>
+                    <div class="filter-actions">
+                        <a href="{{ route('admin.verifikasi.index') }}" class="btn btn-sm btn-outline">
+                            <i class="fas fa-undo me-1"></i> Reset Filter
                         </a>
                     </div>
                 </div>
@@ -217,6 +208,56 @@
 
 @push('styles')
     <style>
+        /* Missing Grid & Utility Systems */
+        .d-flex { display: flex !important; }
+        .align-items-center { align-items: center !important; }
+        .gap-1 { gap: 0.25rem !important; }
+        .gap-2 { gap: 0.5rem !important; }
+        .gap-3 { gap: 1rem !important; }
+        .flex-grow-1 { flex-grow: 1 !important; }
+        .text-nowrap { white-space: nowrap !important; }
+        .ms-auto { margin-left: auto !important; }
+        .me-1 { margin-right: 0.25rem !important; }
+        .me-2 { margin-right: 0.5rem !important; }
+        .mb-0 { margin-bottom: 0 !important; }
+        .rounded-pill { border-radius: 50rem !important; }
+
+        /* Filter Styles */
+        .filter-row {
+            display: flex;
+            align-items: flex-end;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .filter-label {
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: var(--maroon-dark);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .filter-group select {
+            min-width: 180px;
+            height: 38px;
+            border: 1.5px solid rgba(107, 15, 26, 0.1);
+            background-color: #fff;
+            transition: all 0.2s;
+        }
+
+        .filter-group select:focus {
+            border-color: var(--maroon);
+            box-shadow: 0 0 0 3px rgba(107, 15, 26, 0.08);
+        }
+
+        /* Table Enhancements */
         .bg-light-soft {
             background-color: #fcfafb;
         }
@@ -234,33 +275,67 @@
         }
 
         .table thead th {
+            background: var(--maroon-pale);
+            color: var(--maroon-dark);
             font-size: 0.75rem;
-            letter-spacing: 0.05em;
-            padding: 15px 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            padding: 18px 16px;
+            border: none;
+        }
+
+        .table tbody tr {
+            transition: all 0.2s;
+        }
+
+        .table tbody tr:hover {
+            background-color: var(--maroon-pale) !important;
+            transform: scale(1.002);
         }
 
         .table tbody td {
-            padding: 16px 12px;
+            padding: 20px 16px;
+            border-bottom: 1px solid rgba(107, 15, 26, 0.05);
+            font-size: 0.9rem;
+        }
+
+        /* Custom Badge Styles */
+        .badge {
+            padding: 6px 12px;
+            font-weight: 600;
+            font-size: 0.75rem;
+            letter-spacing: 0.02em;
         }
 
         .badge-danger {
-            background: rgba(178, 34, 52, 0.1);
-            color: #B22234;
+            background: #fdf0ef;
+            color: #a82010;
+            border: 1px solid rgba(168, 32, 16, 0.1);
         }
 
         .badge-success {
-            background: rgba(26, 122, 69, 0.1);
+            background: #edfaf3;
             color: #1a7a45;
+            border: 1px solid rgba(26, 122, 69, 0.1);
         }
 
         .badge-primary {
-            background: rgba(26, 58, 122, 0.1);
+            background: #edf0fb;
             color: #1a3a7a;
+            border: 1px solid rgba(26, 58, 122, 0.1);
         }
 
         .badge-warning {
-            background: rgba(154, 111, 0, 0.1);
+            background: #fff8e1;
             color: #9a6f00;
+            border: 1px solid rgba(154, 111, 0, 0.1);
+        }
+
+        .empty-state i {
+            font-size: 3.5rem;
+            color: var(--maroon-pale);
+            display: block;
         }
     </style>
 @endpush

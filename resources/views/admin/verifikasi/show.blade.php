@@ -23,7 +23,7 @@
                                 default => 'fa-file',
                             };
                         @endphp
-                        <span class="badge badge-{{ $color }} me-2 px-3 py-2" style="font-size: 0.85rem;">
+                        <span class="badge badge-{{ $color }} badge-lg me-2">
                             <i class="fas {{ $icon }} me-1"></i> {{ $triDharma ?? 'Kegiatan' }}
                         </span>
                         <a href="{{ route('admin.verifikasi.index') }}" class="btn btn-outline btn-sm">
@@ -37,7 +37,7 @@
                     <div class="info-section mb-4">
                         <h4 class="section-title">Informasi Dosen</h4>
                         <div class="row">
-                            <div class="col-md-6">
+                            <div class="col-md-8">
                                 <div class="info-row">
                                     <span class="info-label">Nama:</span>
                                     <span class="info-value">{{ $kegiatan->user->name }}</span>
@@ -51,7 +51,7 @@
                                     <span class="info-value">{{ $kegiatan->user->nidn ?? '-' }}</span>
                                 </div>
                             </div>
-                            <div class="col-md-6">
+                            <div class="col-md-4">
                                 <div class="info-row">
                                     <span class="info-label">Prodi:</span>
                                     <span class="info-value">{{ $kegiatan->user->prodi ?? '-' }}</span>
@@ -225,8 +225,7 @@
                             <label class="form-label">Status Saat Ini</label>
                             <div>
                                 <span
-                                    class="badge badge-{{ $kegiatan->status == 'Disetujui' ? 'success' : ($kegiatan->status == 'Ditolak' ? 'danger' : 'warning') }}"
-                                    style="font-size: 1rem; padding: 8px 12px;">
+                                    class="badge badge-{{ $kegiatan->status == 'Disetujui' ? 'success' : ($kegiatan->status == 'Ditolak' ? 'danger' : 'warning') }} badge-lg">
                                     {{ $kegiatan->status }}
                                 </span>
                             </div>
@@ -278,47 +277,148 @@
 
 @push('styles')
     <style>
+        /* Missing Grid & Utility Systems */
+        .row {
+            display: flex;
+            flex-wrap: wrap;
+            margin-right: -12px;
+            margin-left: -12px;
+            gap: 24px 0;
+        }
+
+        .col-md-8 {
+            flex: 0 0 66.666667%;
+            max-width: 66.666667%;
+            padding: 0 12px;
+        }
+
+        .col-md-4 {
+            flex: 0 0 33.333333%;
+            max-width: 33.333333%;
+            padding: 0 12px;
+        }
+
+        .d-flex {
+            display: flex !important;
+        }
+
+        .justify-content-between {
+            justify-content-between !important;
+        }
+
+        .align-items-center {
+            align-items: center !important;
+        }
+
+        .flex-wrap {
+            flex-wrap: wrap !important;
+        }
+
+        .gap-3 {
+            gap: 1rem !important;
+        }
+
+        .mb-0 {
+            margin-bottom: 0 !important;
+        }
+
+        .mb-3 {
+            margin-bottom: 1rem !important;
+        }
+
+        .mb-4 {
+            margin-bottom: 1.5rem !important;
+        }
+
+        .me-1 {
+            margin-right: 0.25rem !important;
+        }
+
+        .me-2 {
+            margin-right: 0.5rem !important;
+        }
+
+        .ms-1 {
+            margin-left: 0.25rem !important;
+        }
+
+        .mt-2 {
+            margin-top: 0.5rem !important;
+        }
+
+        .w-100 {
+            width: 100% !important;
+        }
+
+        @media (max-width: 992px) {
+
+            .col-md-8,
+            .col-md-4 {
+                flex: 0 0 100%;
+                max-width: 100%;
+            }
+        }
+
+        /* Enhanced Info Section */
+        .info-section {
+            margin-bottom: 2rem;
+        }
+
         .info-section h4.section-title {
-            font-size: 1rem;
-            font-weight: 600;
+            font-size: 1.1rem;
+            font-weight: 700;
             color: var(--maroon-dark);
-            margin-bottom: 16px;
-            padding-bottom: 8px;
-            border-bottom: 2px solid rgba(178, 34, 52, 0.2);
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid var(--maroon-pale);
+            display: flex;
+            align-items: center;
+        }
+
+        .info-section h4.section-title::before {
+            content: '';
+            width: 4px;
+            height: 18px;
+            background: var(--maroon);
+            margin-right: 12px;
+            border-radius: 4px;
         }
 
         .info-row {
-            margin-bottom: 12px;
+            margin-bottom: 15px;
             display: flex;
-            align-items: baseline;
+            flex-direction: column;
+            gap: 4px;
         }
 
         .info-label {
-            width: 100px;
             font-weight: 500;
             color: var(--text-muted);
-            font-size: 0.85rem;
-            flex-shrink: 0;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
 
         .info-value {
             font-weight: 600;
             color: var(--text-dark);
+            font-size: 1rem;
         }
 
         .detail-grid {
             display: flex;
             flex-direction: column;
             gap: 0;
-            border: 1px solid #eaeaea;
-            border-radius: 8px;
+            border: 1px solid rgba(107, 15, 26, 0.08);
+            border-radius: 12px;
             overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
         }
 
         .detail-row {
             display: flex;
-            padding: 12px 16px;
-            border-bottom: 1px solid #eaeaea;
+            padding: 16px 20px;
+            border-bottom: 1px solid rgba(107, 15, 26, 0.05);
             background: #fff;
             align-items: center;
         }
@@ -328,13 +428,14 @@
         }
 
         .detail-row:nth-child(even) {
-            background: #fcfafb;
+            background: #fdfafb;
         }
 
         .detail-label {
-            width: 180px;
+            width: 200px;
             font-weight: 500;
             color: var(--text-muted);
+            font-size: 0.9rem;
             flex-shrink: 0;
         }
 
@@ -342,59 +443,71 @@
             flex: 1;
             font-weight: 600;
             color: var(--maroon-dark);
+            font-size: 0.95rem;
         }
 
         .document-card {
             display: flex;
             align-items: center;
-            border: 1px solid #eaeaea;
-            border-radius: 8px;
-            padding: 16px;
+            border: 1px solid rgba(107, 15, 26, 0.1);
+            border-radius: 12px;
+            padding: 20px;
             background: #fff;
-            min-width: 250px;
-            transition: transform 0.2s, box-shadow 0.2s;
+            min-width: 280px;
+            transition: all 0.3s ease;
         }
 
         .document-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            transform: translateY(-4px);
+            box-shadow: 0 8px 20px rgba(107, 15, 26, 0.1);
+            border-color: var(--maroon-light);
         }
 
         .document-icon {
-            font-size: 2.5rem;
-            margin-right: 16px;
+            font-size: 2.8rem;
+            margin-right: 20px;
         }
 
         .document-name {
-            font-weight: 600;
-            font-size: 0.95rem;
-            color: var(--text-dark);
+            font-weight: 700;
+            font-size: 1rem;
+            color: var(--maroon-dark);
         }
 
         .card-footer {
-            background: transparent;
-            border-top: 1px solid rgba(0, 0, 0, 0.1);
-            padding: 16px;
+            background: var(--maroon-pale);
+            border-top: 1px solid rgba(107, 15, 26, 0.1);
+            padding: 20px;
+        }
+
+        .badge-lg {
+            padding: 8px 16px;
+            font-size: 0.85rem;
+            border-radius: 8px;
         }
 
         .badge-danger {
-            background: rgba(178, 34, 52, 0.1);
-            color: #B22234;
+            background: #fdf0ef;
+            color: #a82010;
+            border: 1px solid rgba(168, 32, 16, 0.1);
         }
 
         .badge-success {
-            background: rgba(26, 122, 69, 0.1);
+            background: #edfaf3;
             color: #1a7a45;
+            border: 1px solid rgba(26, 122, 69, 0.1);
         }
 
         .badge-primary {
-            background: rgba(26, 58, 122, 0.1);
+            background: #edf0fb;
             color: #1a3a7a;
+            border: 1px solid rgba(26, 58, 122, 0.1);
         }
 
         .badge-warning {
-            background: rgba(154, 111, 0, 0.1);
+            background: #fff8e1;
             color: #9a6f00;
+            border: 1px solid rgba(154, 111, 0, 0.1);
         }
     </style>
 @endpush

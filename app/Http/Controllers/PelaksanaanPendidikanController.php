@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\PelaksanaanPendidikan;
 use App\Models\KategoriKegiatan;
+use App\Models\PelaksanaanPendidikan;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -29,7 +29,7 @@ class PelaksanaanPendidikanController extends Controller
 
         $kegiatans = $query->latest()->paginate(15);
         $jenisKegiatanOptions = PelaksanaanPendidikan::jenisKegiatanOptions();
-        
+
         return view('dosen.pelaksanaan_pendidikan.index', compact('kegiatans', 'jenisKegiatanOptions', 'jenisKegiatan'));
     }
 
@@ -37,10 +37,10 @@ class PelaksanaanPendidikanController extends Controller
     public function create($jenisKegiatan)
     {
         $this->validateJenisKegiatan($jenisKegiatan);
-        
+
         $kategoriOptions = $this->getKategoriOptions($jenisKegiatan);
         $viewName = $this->getViewName($jenisKegiatan);
-        
+
         return view("dosen.pelaksanaan_pendidikan.{$viewName}.create", compact('jenisKegiatan', 'kategoriOptions'));
     }
 
@@ -48,7 +48,7 @@ class PelaksanaanPendidikanController extends Controller
     public function store(Request $request, $jenisKegiatan)
     {
         $this->validateJenisKegiatan($jenisKegiatan);
-        
+
         $validationRules = $this->getValidationRules($jenisKegiatan);
         $data = $request->validate($validationRules);
 
@@ -62,8 +62,9 @@ class PelaksanaanPendidikanController extends Controller
         $data['angka_kredit'] = $record->calculateAngkaKredit($this->user());
 
         PelaksanaanPendidikan::create($data);
-        
+
         $jenisLabel = PelaksanaanPendidikan::jenisKegiatanOptions()[$jenisKegiatan];
+
         return redirect()->route('dosen.pendidikan.index')
             ->with('success', "{$jenisLabel} berhasil disimpan dan menunggu persetujuan admin.");
     }
@@ -72,14 +73,14 @@ class PelaksanaanPendidikanController extends Controller
     public function edit($jenisKegiatan, PelaksanaanPendidikan $pendidikan)
     {
         $this->authorize('update', $pendidikan);
-        
+
         if ($pendidikan->status !== 'Pending') {
             return back()->with('error', 'Kegiatan yang sudah diproses tidak dapat diedit.');
         }
-        
+
         $kategoriOptions = $this->getKategoriOptions($jenisKegiatan);
         $viewName = $this->getViewName($jenisKegiatan);
-        
+
         return view("dosen.pelaksanaan_pendidikan.{$viewName}.edit", compact('pendidikan', 'jenisKegiatan', 'kategoriOptions'));
     }
 
@@ -87,7 +88,7 @@ class PelaksanaanPendidikanController extends Controller
     public function update(Request $request, $jenisKegiatan, PelaksanaanPendidikan $pendidikan)
     {
         $this->authorize('update', $pendidikan);
-        
+
         $validationRules = $this->getValidationRules($jenisKegiatan);
         $data = $request->validate($validationRules);
 
@@ -95,8 +96,9 @@ class PelaksanaanPendidikanController extends Controller
         $pendidikan->update($data);
         $pendidikan->angka_kredit = $pendidikan->calculateAngkaKredit($this->user());
         $pendidikan->save();
-        
+
         $jenisLabel = PelaksanaanPendidikan::jenisKegiatanOptions()[$jenisKegiatan];
+
         return redirect()->route('dosen.pendidikan.index')
             ->with('success', "{$jenisLabel} berhasil diperbarui.");
     }
@@ -107,6 +109,7 @@ class PelaksanaanPendidikanController extends Controller
         $this->authorize('delete', $pendidikan);
 
         $pendidikan->delete();
+
         return back()->with('success', 'Kegiatan berhasil dihapus.');
     }
 
@@ -114,7 +117,7 @@ class PelaksanaanPendidikanController extends Controller
     private function validateJenisKegiatan($jenisKegiatan)
     {
         $valid = array_keys(PelaksanaanPendidikan::jenisKegiatanOptions());
-        if (!in_array($jenisKegiatan, $valid)) {
+        if (! in_array($jenisKegiatan, $valid)) {
             abort(404, 'Jenis kegiatan tidak valid');
         }
     }
@@ -134,12 +137,12 @@ class PelaksanaanPendidikanController extends Controller
             'pembimbing_dosen' => 'Pembimbing Dosen',
             'tugas_tambahan' => 'Tugas Tambahan',
         ];
-        
+
         $submenu = $submenuMap[$jenisKegiatan] ?? null;
         if ($submenu) {
             return KategoriKegiatan::getKategoriBySubmenu($submenu);
         }
-        
+
         return [];
     }
 
@@ -165,7 +168,7 @@ class PelaksanaanPendidikanController extends Controller
                 'semester' => 'required|string|max:255',
                 'link_dokumen' => 'nullable|url|max:255',
             ]),
-            
+
             'bimbingan' => array_merge($baseRules, [
                 'semester' => 'required|string|max:255',
                 'kategori_kegiatan_id' => 'required|exists:kategori_kegiatan,id',
@@ -174,7 +177,7 @@ class PelaksanaanPendidikanController extends Controller
                 'jenis_bimbingan' => 'nullable|string|max:255',
                 'program_studi' => 'nullable|string|max:255',
             ]),
-            
+
             'pengujian' => array_merge($baseRules, [
                 'kategori_kegiatan_id' => 'required|exists:kategori_kegiatan,id',
                 'judul_pengujian' => 'required|string|max:255',
@@ -184,7 +187,7 @@ class PelaksanaanPendidikanController extends Controller
                 'semester' => 'required|string|max:255',
                 'link_dokumen' => 'nullable|url|max:255',
             ]),
-            
+
             'bahan_ajar' => array_merge($baseRules, [
                 'kategori_kegiatan_id' => 'required|exists:kategori_kegiatan,id',
                 'judul_bahan_ajar' => 'required|string|max:255',
@@ -194,7 +197,7 @@ class PelaksanaanPendidikanController extends Controller
                 'status_penulis' => 'nullable|string|max:255',
                 'jumlah_anggota' => 'nullable|integer|min:0',
             ]),
-            
+
             'pembinaan' => array_merge($baseRules, [
                 'semester' => 'required|string|max:255',
                 'kategori_kegiatan_id' => 'required|exists:kategori_kegiatan,id',
@@ -202,14 +205,14 @@ class PelaksanaanPendidikanController extends Controller
                 'jenis_bimbingan' => 'nullable|string|max:255',
                 'program_studi' => 'nullable|string|max:255',
             ]),
-            
+
             'visiting_scientist' => array_merge($baseRules, [
                 'perguruan_tinggi_pengundang' => 'required|string|max:255',
                 'lama_kegiatan_hari' => 'required|integer|min:1',
                 'kategori_kegiatan_id' => 'required|exists:kategori_kegiatan,id',
                 'tanggal_mulai' => 'required|date',
             ]),
-            
+
             'detasering' => array_merge($baseRules, [
                 'kategori_kegiatan_id' => 'required|exists:kategori_kegiatan,id',
                 'perguruan_tinggi_sasaran' => 'required|string|max:255',
@@ -218,7 +221,7 @@ class PelaksanaanPendidikanController extends Controller
                 'nomor_sk_penugasan' => 'nullable|string|max:255',
                 'tanggal_sk_penugasan' => 'nullable|date',
             ]),
-            
+
             'orasi_ilmiah' => array_merge($baseRules, [
                 'kategori_kegiatan_id' => 'required|exists:kategori_kegiatan,id',
                 'kategori_pembicara' => 'nullable|string|max:255',
@@ -227,7 +230,7 @@ class PelaksanaanPendidikanController extends Controller
                 'penyelenggara' => 'required|string|max:255',
                 'tanggal_mulai' => 'required|date',
             ]),
-            
+
             'pembimbing_dosen' => array_merge($baseRules, [
                 'kategori_kegiatan_id' => 'required|exists:kategori_kegiatan,id',
                 'program_studi' => 'nullable|string|max:255',
@@ -241,7 +244,7 @@ class PelaksanaanPendidikanController extends Controller
                 'no_sk_tugas' => 'nullable|string|max:255',
                 'tanggal_sk_tugas' => 'nullable|date',
             ]),
-            
+
             'tugas_tambahan' => array_merge($baseRules, [
                 'tugas_tambahan' => 'required|string|max:255',
                 'unit_kerja' => 'nullable|string|max:255',
