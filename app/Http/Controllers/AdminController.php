@@ -229,7 +229,14 @@ class AdminController extends Controller
         $model = $this->getModel($sumberKey);
         $kegiatan = $model::with(['user', 'kategori'])->findOrFail($id);
         
-        return view('admin.verifikasi.show', compact('kegiatan', 'sumberKey'));
+        $triDharma = match($sumberKey) {
+            'pendidikan' => 'Pelaksanaan Pendidikan',
+            'penelitian' => 'Pelaksanaan Penelitian',
+            'pengabdian' => 'Pelaksanaan Pengabdian',
+            default => 'Tri Dharma',
+        };
+        
+        return view('admin.verifikasi.show', compact('kegiatan', 'sumberKey', 'triDharma'));
     }
 
     // Approve/Reject activity
