@@ -98,7 +98,7 @@
     <div class="card">
         <div class="card-header">
             <h3 class="card-title">Kegiatan Terbaru</h3>
-            <a href="{{ route('admin.kegiatan.index') }}" class="btn btn-outline btn-sm">Lihat Semua</a>
+            <a href="{{ route('admin.verifikasi.index') }}" class="btn btn-outline btn-sm">Lihat Semua</a>
         </div>
         <div class="card-body" style="padding:0">
             <div class="table-wrap">

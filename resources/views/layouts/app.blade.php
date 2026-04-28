@@ -15,12 +15,27 @@
     <link rel="stylesheet" href="{{ asset('assets/css/app.css') }}">
     <style>
         /* Submenu Styles for SISTER Menu Structure */
+        .has-submenu .nav-link {
+            cursor: pointer;
+        }
         .nav-submenu {
             padding: 4px 0 8px;
             margin-bottom: 4px;
             background: rgba(0,0,0,0.1);
             border-radius: 8px;
             margin: 4px 10px;
+            display: none;
+        }
+        .nav-submenu.show {
+            display: block;
+        }
+        .submenu-arrow {
+            margin-left: auto;
+            font-size: 0.75rem;
+            transition: transform 0.2s;
+        }
+        .has-submenu.open .submenu-arrow {
+            transform: rotate(180deg);
         }
         .nav-submenu-title {
             font-size: 0.65rem;
@@ -145,125 +160,143 @@
                 </a>
                 
                 {{-- PELAKSANAAN PENDIDIKAN --}}
-                <div class="nav-section-label">Pelaksanaan Pendidikan</div>
-                
-                <a href="{{ route('dosen.pendidikan.index') }}"
-                    class="nav-link {{ request()->routeIs('dosen.pendidikan.index') ? 'active' : '' }}">
-                    <i class="fas fa-list"></i> Daftar Kegiatan
-                    @php $pendPending = auth()->user()->pelaksanaanPendidikan()->where('status','Pending')->count() @endphp
-                    @if($pendPending > 0)
-                        <span class="nav-badge">{{ $pendPending }}</span>
-                    @endif
-                </a>
-                
-                <div class="nav-submenu">
-                    <div class="nav-submenu-title" style="font-size: 0.7rem; padding: 6px 12px; color: rgba(255,255,255,0.5); text-transform: uppercase; letter-spacing: 0.5px;">
-                        Input Kegiatan
+                @php 
+                    $isPendidikan = request()->routeIs('dosen.pendidikan.*'); 
+                    $pendPending = auth()->user()->pelaksanaanPendidikan()->where('status','Pending')->count();
+                @endphp
+                <div class="nav-item has-submenu {{ $isPendidikan ? 'open' : '' }}">
+                    <a href="#" class="nav-link toggle-submenu {{ $isPendidikan ? 'active' : '' }}">
+                        <i class="fas fa-graduation-cap"></i> Pelaksanaan Pendidikan
+                        @if($pendPending > 0)
+                            <span class="nav-badge" style="margin-right: 5px;">{{ $pendPending }}</span>
+                        @endif
+                        <i class="fas fa-chevron-down submenu-arrow"></i>
+                    </a>
+                    <div class="nav-submenu {{ $isPendidikan ? 'show' : '' }}">
+                        <a href="{{ route('dosen.pendidikan.index') }}"
+                            class="nav-submenu-link {{ request()->routeIs('dosen.pendidikan.index') ? 'active' : '' }}" style="margin-bottom: 8px; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 12px; border-radius: 0;">
+                            <i class="fas fa-list"></i> Daftar Kegiatan
+                        </a>
+                        <div class="nav-submenu-title" style="font-size: 0.7rem; padding: 6px 12px; color: rgba(255,255,255,0.5); text-transform: uppercase; letter-spacing: 0.5px;">
+                            Input Kegiatan
+                        </div>
+                        <a href="{{ route('dosen.pendidikan.create', 'pengajaran') }}"
+                            class="nav-submenu-link {{ request()->routeIs('dosen.pendidikan.create') && request()->route('jenisKegiatan') === 'pengajaran' ? 'active' : '' }}">
+                            <i class="fas fa-chalkboard-teacher"></i> Pengajaran
+                        </a>
+                        <a href="{{ route('dosen.pendidikan.create', 'bimbingan') }}"
+                            class="nav-submenu-link {{ request()->routeIs('dosen.pendidikan.create') && request()->route('jenisKegiatan') === 'bimbingan' ? 'active' : '' }}">
+                            <i class="fas fa-user-graduate"></i> Bimbingan Mahasiswa
+                        </a>
+                        <a href="{{ route('dosen.pendidikan.create', 'pengujian') }}"
+                            class="nav-submenu-link {{ request()->routeIs('dosen.pendidikan.create') && request()->route('jenisKegiatan') === 'pengujian' ? 'active' : '' }}">
+                            <i class="fas fa-clipboard-check"></i> Pengujian Mahasiswa
+                        </a>
+                        <a href="{{ route('dosen.pendidikan.create', 'bahan_ajar') }}"
+                            class="nav-submenu-link {{ request()->routeIs('dosen.pendidikan.create') && request()->route('jenisKegiatan') === 'bahan_ajar' ? 'active' : '' }}">
+                            <i class="fas fa-book"></i> Bahan Ajar
+                        </a>
+                        <a href="{{ route('dosen.pendidikan.create', 'pembinaan') }}"
+                            class="nav-submenu-link {{ request()->routeIs('dosen.pendidikan.create') && request()->route('jenisKegiatan') === 'pembinaan' ? 'active' : '' }}">
+                            <i class="fas fa-users"></i> Pembinaan Mahasiswa
+                        </a>
+                        <a href="{{ route('dosen.pendidikan.create', 'visiting_scientist') }}"
+                            class="nav-submenu-link {{ request()->routeIs('dosen.pendidikan.create') && request()->route('jenisKegiatan') === 'visiting_scientist' ? 'active' : '' }}">
+                            <i class="fas fa-plane"></i> Visiting Scientist
+                        </a>
+                        <a href="{{ route('dosen.pendidikan.create', 'detasering') }}"
+                            class="nav-submenu-link {{ request()->routeIs('dosen.pendidikan.create') && request()->route('jenisKegiatan') === 'detasering' ? 'active' : '' }}">
+                            <i class="fas fa-exchange-alt"></i> Detasering
+                        </a>
+                        <a href="{{ route('dosen.pendidikan.create', 'orasi_ilmiah') }}"
+                            class="nav-submenu-link {{ request()->routeIs('dosen.pendidikan.create') && request()->route('jenisKegiatan') === 'orasi_ilmiah' ? 'active' : '' }}">
+                            <i class="fas fa-microphone"></i> Orasi Ilmiah
+                        </a>
+                        <a href="{{ route('dosen.pendidikan.create', 'pembimbing_dosen') }}"
+                            class="nav-submenu-link {{ request()->routeIs('dosen.pendidikan.create') && request()->route('jenisKegiatan') === 'pembimbing_dosen' ? 'active' : '' }}">
+                            <i class="fas fa-user-tie"></i> Pembimbing Dosen
+                        </a>
+                        <a href="{{ route('dosen.pendidikan.create', 'tugas_tambahan') }}"
+                            class="nav-submenu-link {{ request()->routeIs('dosen.pendidikan.create') && request()->route('jenisKegiatan') === 'tugas_tambahan' ? 'active' : '' }}">
+                            <i class="fas fa-briefcase"></i> Tugas Tambahan
+                        </a>
                     </div>
-                    <a href="{{ route('dosen.pendidikan.create', 'pengajaran') }}"
-                        class="nav-submenu-link {{ request()->routeIs('dosen.pendidikan.create') && request()->route('jenisKegiatan') === 'pengajaran' ? 'active' : '' }}">
-                        <i class="fas fa-chalkboard-teacher"></i> Pengajaran
-                    </a>
-                    <a href="{{ route('dosen.pendidikan.create', 'bimbingan') }}"
-                        class="nav-submenu-link {{ request()->routeIs('dosen.pendidikan.create') && request()->route('jenisKegiatan') === 'bimbingan' ? 'active' : '' }}">
-                        <i class="fas fa-user-graduate"></i> Bimbingan Mahasiswa
-                    </a>
-                    <a href="{{ route('dosen.pendidikan.create', 'pengujian') }}"
-                        class="nav-submenu-link {{ request()->routeIs('dosen.pendidikan.create') && request()->route('jenisKegiatan') === 'pengujian' ? 'active' : '' }}">
-                        <i class="fas fa-clipboard-check"></i> Pengujian Mahasiswa
-                    </a>
-                    <a href="{{ route('dosen.pendidikan.create', 'bahan_ajar') }}"
-                        class="nav-submenu-link {{ request()->routeIs('dosen.pendidikan.create') && request()->route('jenisKegiatan') === 'bahan_ajar' ? 'active' : '' }}">
-                        <i class="fas fa-book"></i> Bahan Ajar
-                    </a>
-                    <a href="{{ route('dosen.pendidikan.create', 'pembinaan') }}"
-                        class="nav-submenu-link {{ request()->routeIs('dosen.pendidikan.create') && request()->route('jenisKegiatan') === 'pembinaan' ? 'active' : '' }}">
-                        <i class="fas fa-users"></i> Pembinaan Mahasiswa
-                    </a>
-                    <a href="{{ route('dosen.pendidikan.create', 'visiting_scientist') }}"
-                        class="nav-submenu-link {{ request()->routeIs('dosen.pendidikan.create') && request()->route('jenisKegiatan') === 'visiting_scientist' ? 'active' : '' }}">
-                        <i class="fas fa-plane"></i> Visiting Scientist
-                    </a>
-                    <a href="{{ route('dosen.pendidikan.create', 'detasering') }}"
-                        class="nav-submenu-link {{ request()->routeIs('dosen.pendidikan.create') && request()->route('jenisKegiatan') === 'detasering' ? 'active' : '' }}">
-                        <i class="fas fa-exchange-alt"></i> Detasering
-                    </a>
-                    <a href="{{ route('dosen.pendidikan.create', 'orasi_ilmiah') }}"
-                        class="nav-submenu-link {{ request()->routeIs('dosen.pendidikan.create') && request()->route('jenisKegiatan') === 'orasi_ilmiah' ? 'active' : '' }}">
-                        <i class="fas fa-microphone"></i> Orasi Ilmiah
-                    </a>
-                    <a href="{{ route('dosen.pendidikan.create', 'pembimbing_dosen') }}"
-                        class="nav-submenu-link {{ request()->routeIs('dosen.pendidikan.create') && request()->route('jenisKegiatan') === 'pembimbing_dosen' ? 'active' : '' }}">
-                        <i class="fas fa-user-tie"></i> Pembimbing Dosen
-                    </a>
-                    <a href="{{ route('dosen.pendidikan.create', 'tugas_tambahan') }}"
-                        class="nav-submenu-link {{ request()->routeIs('dosen.pendidikan.create') && request()->route('jenisKegiatan') === 'tugas_tambahan' ? 'active' : '' }}">
-                        <i class="fas fa-briefcase"></i> Tugas Tambahan
-                    </a>
                 </div>
                 
                 {{-- PELAKSANAAN PENELITIAN --}}
-                <div class="nav-section-label">Pelaksanaan Penelitian</div>
-                
-                <a href="{{ route('dosen.penelitian.index') }}"
-                    class="nav-link {{ request()->routeIs('dosen.penelitian.index') ? 'active' : '' }}">
-                    <i class="fas fa-list"></i> Daftar Kegiatan
-                    @php $penelitianPending = auth()->user()->pelaksanaanPenelitian()->where('status','Pending')->count() @endphp
-                    @if($penelitianPending > 0)
-                        <span class="nav-badge">{{ $penelitianPending }}</span>
-                    @endif
-                </a>
-                
-                <div class="nav-submenu">
-                    <div class="nav-submenu-title" style="font-size: 0.7rem; padding: 6px 12px; color: rgba(255,255,255,0.5); text-transform: uppercase; letter-spacing: 0.5px;">
-                        Input Kegiatan
+                @php 
+                    $isPenelitian = request()->routeIs('dosen.penelitian.*'); 
+                    $penelitianPending = auth()->user()->pelaksanaanPenelitian()->where('status','Pending')->count();
+                @endphp
+                <div class="nav-item has-submenu {{ $isPenelitian ? 'open' : '' }}">
+                    <a href="#" class="nav-link toggle-submenu {{ $isPenelitian ? 'active' : '' }}">
+                        <i class="fas fa-flask"></i> Pelaksanaan Penelitian
+                        @if($penelitianPending > 0)
+                            <span class="nav-badge" style="margin-right: 5px;">{{ $penelitianPending }}</span>
+                        @endif
+                        <i class="fas fa-chevron-down submenu-arrow"></i>
+                    </a>
+                    <div class="nav-submenu {{ $isPenelitian ? 'show' : '' }}">
+                        <a href="{{ route('dosen.penelitian.index') }}"
+                            class="nav-submenu-link {{ request()->routeIs('dosen.penelitian.index') ? 'active' : '' }}" style="margin-bottom: 8px; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 12px; border-radius: 0;">
+                            <i class="fas fa-list"></i> Daftar Kegiatan
+                        </a>
+                        <div class="nav-submenu-title" style="font-size: 0.7rem; padding: 6px 12px; color: rgba(255,255,255,0.5); text-transform: uppercase; letter-spacing: 0.5px;">
+                            Input Kegiatan
+                        </div>
+                        <a href="{{ route('dosen.penelitian.create', 'penelitian') }}"
+                            class="nav-submenu-link {{ request()->routeIs('dosen.penelitian.create') && request()->route('jenisKegiatan') === 'penelitian' ? 'active' : '' }}">
+                            <i class="fas fa-microscope"></i> Penelitian
+                        </a>
+                        <a href="{{ route('dosen.penelitian.create', 'publikasi_karya') }}"
+                            class="nav-submenu-link {{ request()->routeIs('dosen.penelitian.create') && request()->route('jenisKegiatan') === 'publikasi_karya' ? 'active' : '' }}">
+                            <i class="fas fa-file-alt"></i> Publikasi Karya
+                        </a>
+                        <a href="{{ route('dosen.penelitian.create', 'paten_hki') }}"
+                            class="nav-submenu-link {{ request()->routeIs('dosen.penelitian.create') && request()->route('jenisKegiatan') === 'paten_hki' ? 'active' : '' }}">
+                            <i class="fas fa-copyright"></i> Paten/HKI
+                        </a>
                     </div>
-                    <a href="{{ route('dosen.penelitian.create', 'penelitian') }}"
-                        class="nav-submenu-link {{ request()->routeIs('dosen.penelitian.create') && request()->route('jenisKegiatan') === 'penelitian' ? 'active' : '' }}">
-                        <i class="fas fa-flask"></i> Penelitian
-                    </a>
-                    <a href="{{ route('dosen.penelitian.create', 'publikasi_karya') }}"
-                        class="nav-submenu-link {{ request()->routeIs('dosen.penelitian.create') && request()->route('jenisKegiatan') === 'publikasi_karya' ? 'active' : '' }}">
-                        <i class="fas fa-file-alt"></i> Publikasi Karya
-                    </a>
-                    <a href="{{ route('dosen.penelitian.create', 'paten_hki') }}"
-                        class="nav-submenu-link {{ request()->routeIs('dosen.penelitian.create') && request()->route('jenisKegiatan') === 'paten_hki' ? 'active' : '' }}">
-                        <i class="fas fa-copyright"></i> Paten/HKI
-                    </a>
                 </div>
                 
                 {{-- PELAKSANAAN PENGABDIAN --}}
-                <div class="nav-section-label">Pelaksanaan Pengabdian</div>
-                
-                <a href="{{ route('dosen.pengabdian.index') }}"
-                    class="nav-link {{ request()->routeIs('dosen.pengabdian.index') ? 'active' : '' }}">
-                    <i class="fas fa-list"></i> Daftar Kegiatan
-                    @php $pengabdianPending = auth()->user()->pelaksanaanPengabdian()->where('status','Pending')->count() @endphp
-                    @if($pengabdianPending > 0)
-                        <span class="nav-badge">{{ $pengabdianPending }}</span>
-                    @endif
-                </a>
-                
-                <div class="nav-submenu">
-                    <div class="nav-submenu-title" style="font-size: 0.7rem; padding: 6px 12px; color: rgba(255,255,255,0.5); text-transform: uppercase; letter-spacing: 0.5px;">
-                        Input Kegiatan
+                @php 
+                    $isPengabdian = request()->routeIs('dosen.pengabdian.*'); 
+                    $pengabdianPending = auth()->user()->pelaksanaanPengabdian()->where('status','Pending')->count();
+                @endphp
+                <div class="nav-item has-submenu {{ $isPengabdian ? 'open' : '' }}">
+                    <a href="#" class="nav-link toggle-submenu {{ $isPengabdian ? 'active' : '' }}">
+                        <i class="fas fa-hands-helping"></i> Pelaksanaan Pengabdian
+                        @if($pengabdianPending > 0)
+                            <span class="nav-badge" style="margin-right: 5px;">{{ $pengabdianPending }}</span>
+                        @endif
+                        <i class="fas fa-chevron-down submenu-arrow"></i>
+                    </a>
+                    <div class="nav-submenu {{ $isPengabdian ? 'show' : '' }}">
+                        <a href="{{ route('dosen.pengabdian.index') }}"
+                            class="nav-submenu-link {{ request()->routeIs('dosen.pengabdian.index') ? 'active' : '' }}" style="margin-bottom: 8px; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 12px; border-radius: 0;">
+                            <i class="fas fa-list"></i> Daftar Kegiatan
+                        </a>
+                        <div class="nav-submenu-title" style="font-size: 0.7rem; padding: 6px 12px; color: rgba(255,255,255,0.5); text-transform: uppercase; letter-spacing: 0.5px;">
+                            Input Kegiatan
+                        </div>
+                        <a href="{{ route('dosen.pengabdian.create', 'pengabdian') }}"
+                            class="nav-submenu-link {{ request()->routeIs('dosen.pengabdian.create') && request()->route('jenisKegiatan') === 'pengabdian' ? 'active' : '' }}">
+                            <i class="fas fa-handshake"></i> Pengabdian
+                        </a>
+                        <a href="{{ route('dosen.pengabdian.create', 'pembicara') }}"
+                            class="nav-submenu-link {{ request()->routeIs('dosen.pengabdian.create') && request()->route('jenisKegiatan') === 'pembicara' ? 'active' : '' }}">
+                            <i class="fas fa-microphone-alt"></i> Pembicara
+                        </a>
+                        <a href="{{ route('dosen.pengabdian.create', 'pengelola_jurnal') }}"
+                            class="nav-submenu-link {{ request()->routeIs('dosen.pengabdian.create') && request()->route('jenisKegiatan') === 'pengelola_jurnal' ? 'active' : '' }}">
+                            <i class="fas fa-newspaper"></i> Pengelola Jurnal
+                        </a>
+                        <a href="{{ route('dosen.pengabdian.create', 'jabatan_struktural') }}"
+                            class="nav-submenu-link {{ request()->routeIs('dosen.pengabdian.create') && request()->route('jenisKegiatan') === 'jabatan_struktural' ? 'active' : '' }}">
+                            <i class="fas fa-building"></i> Jabatan Struktural
+                        </a>
                     </div>
-                    <a href="{{ route('dosen.pengabdian.create', 'pengabdian') }}"
-                        class="nav-submenu-link {{ request()->routeIs('dosen.pengabdian.create') && request()->route('jenisKegiatan') === 'pengabdian' ? 'active' : '' }}">
-                        <i class="fas fa-hands-helping"></i> Pengabdian
-                    </a>
-                    <a href="{{ route('dosen.pengabdian.create', 'pembicara') }}"
-                        class="nav-submenu-link {{ request()->routeIs('dosen.pengabdian.create') && request()->route('jenisKegiatan') === 'pembicara' ? 'active' : '' }}">
-                        <i class="fas fa-microphone-alt"></i> Pembicara
-                    </a>
-                    <a href="{{ route('dosen.pengabdian.create', 'pengelola_jurnal') }}"
-                        class="nav-submenu-link {{ request()->routeIs('dosen.pengabdian.create') && request()->route('jenisKegiatan') === 'pengelola_jurnal' ? 'active' : '' }}">
-                        <i class="fas fa-newspaper"></i> Pengelola Jurnal
-                    </a>
-                    <a href="{{ route('dosen.pengabdian.create', 'jabatan_struktural') }}"
-                        class="nav-submenu-link {{ request()->routeIs('dosen.pengabdian.create') && request()->route('jenisKegiatan') === 'jabatan_struktural' ? 'active' : '' }}">
-                        <i class="fas fa-building"></i> Jabatan Struktural
-                    </a>
                 </div>
                 
                 {{-- SIMULASI --}}
@@ -322,6 +355,19 @@
             document.getElementById('sidebar').classList.toggle('open');
             document.getElementById('overlay').classList.toggle('active');
         }
+
+        // Submenu Accordion Logic
+        document.querySelectorAll('.toggle-submenu').forEach(function(el) {
+            el.addEventListener('click', function(e) {
+                e.preventDefault();
+                let parent = this.closest('.has-submenu');
+                let submenu = parent.querySelector('.nav-submenu');
+                
+                // Toggle open state
+                parent.classList.toggle('open');
+                submenu.classList.toggle('show');
+            });
+        });
     </script>
     @stack('scripts')
 </body>

@@ -73,9 +73,27 @@ class SimulasiAngkaKredit extends Model
 
     public static function hitungSimulasi(User $user, string $periode_mulai, string $periode_selesai): array
     {
-        $p = $user->pelaksanaanPendidikan()->where('status', 'Disetujui')->whereBetween('created_at', [$periode_mulai, $periode_selesai])->get();
-        $r = $user->pelaksanaanPenelitian()->where('status', 'Disetujui')->whereBetween('created_at', [$periode_mulai, $periode_selesai])->get();
-        $m = $user->pelaksanaanPengabdian()->where('status', 'Disetujui')->whereBetween('created_at', [$periode_mulai, $periode_selesai])->get();
+        $startYear = date('Y', strtotime($periode_mulai));
+        $endYear = date('Y', strtotime($periode_selesai));
+
+        // Ambil kegiatan yang disetujui dalam rentang tahun pelaksanaan ATAU tanggal input
+        $p = $user->pelaksanaanPendidikan()->where('status', 'Disetujui')
+            ->where(function($q) use ($startYear, $endYear, $periode_mulai, $periode_selesai) {
+                $q->whereBetween('tahun_pelaksanaan', [$startYear, $endYear])
+                  ->orWhereBetween('created_at', [$periode_mulai, $periode_selesai]);
+            })->get();
+
+        $r = $user->pelaksanaanPenelitian()->where('status', 'Disetujui')
+            ->where(function($q) use ($startYear, $endYear, $periode_mulai, $periode_selesai) {
+                $q->whereBetween('tahun_pelaksanaan', [$startYear, $endYear])
+                  ->orWhereBetween('created_at', [$periode_mulai, $periode_selesai]);
+            })->get();
+
+        $m = $user->pelaksanaanPengabdian()->where('status', 'Disetujui')
+            ->where(function($q) use ($startYear, $endYear, $periode_mulai, $periode_selesai) {
+                $q->whereBetween('tahun_pelaksanaan', [$startYear, $endYear])
+                  ->orWhereBetween('created_at', [$periode_mulai, $periode_selesai]);
+            })->get();
 
         $ak_pendidikan  = $p->sum('angka_kredit');
         $ak_penelitian  = $r->sum('angka_kredit');

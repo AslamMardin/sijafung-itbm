@@ -95,6 +95,7 @@ class AslamMardinSeeder extends Seeder
                 'link_dokumen'       => 'https://drive.google.com/sample-bimbingan',
                 'status'             => 'Disetujui',
                 'angka_kredit'       => 1.00,
+                'tahun_pelaksanaan'  => ($i <= 6) ? 2023 : 2024,
             ]);
         }
 
@@ -112,6 +113,7 @@ class AslamMardinSeeder extends Seeder
             'link_dokumen'        => 'https://drive.google.com/sample-bukuajar',
             'status'              => 'Disetujui',
             'angka_kredit'        => 20.00,
+            'tahun_pelaksanaan'   => 2023,
         ]);
 
         // Modul/Diktat: 2 modul × 5 AK = 10 AK
@@ -130,6 +132,7 @@ class AslamMardinSeeder extends Seeder
                 'link_dokumen'        => 'https://drive.google.com/sample-modul',
                 'status'              => 'Disetujui',
                 'angka_kredit'        => 5.00,
+                'tahun_pelaksanaan'   => 2022,
             ]);
         }
 
